@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  username     String    @unique
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  role         String    @default("user")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  songs        Song[]
+  playlists    Playlist[]
+
+  @@map("users")
+}
+
+model SiteSettings {
+  id                    Int      @id @default(autoincrement())
+  siteName              String   @default("Cholumusica") @map("site_name")
+  heroText              String   @default("Descubre tu próxima obsesión sonora.") @map("hero_text")
+  accentColor           String   @default("#8B5CF6") @map("accent_color")
+  backgroundColor       String   @default("#0F0F12") @map("background_color")
+  cardColor             String   @default("#1A1A1F") @map("card_color")
+  typography           String   @default("Inter")
+  headingFont           String   @default("Sora") @map("heading_font")
+  bodyFont              String   @default("Inter") @map("body_font")
+  fontScale             String   @default("medium") @map("font_scale")
+  siteEmoji             String   @default("🎵") @map("site_emoji")
+  headerEmoji           String   @default("🎧") @map("header_emoji")
+  heroEmoji             String   @default("✨") @map("hero_emoji")
+  primaryButtonText     String   @default("Añadir canción") @map("primary_button_text")
+  secondaryButtonText   String   @default("Explorar más") @map("secondary_button_text")
+  welcomeText           String   @default("Explora la biblioteca más reciente, crea playlists con estilo y comparte música con la comunidad.") @map("welcome_text")
+  libraryTitle          String   @default("Biblioteca") @map("library_title")
+  playlistsTitle        String   @default("Mis Playlists") @map("playlists_title")
+  emptyStateText        String   @default("Aún no hay canciones — ¡sube la primera!") @map("empty_state_text")
+  footerText            String   @default("Hecho con ❤️ para la comunidad.") @map("footer_text")
+  profileStatsTitle     String   @default("Mi actividad") @map("profile_stats_title")
+  seasonTheme           Boolean  @default(false) @map("season_theme")
+  logoPath              String?  @map("logo_path")
+
+  @@map("site_settings")
+}
+
+model Song {
+  id             Int          @id @default(autoincrement())
+  title          String
+  artist         String
+  album          String?
+  year           Int?
+  genre          String?
+  coverPath      String?      @map("cover_path")
+  trackNumber    Int?         @map("track_number")
+  metadataSource String?      @default("{}") @map("metadata_source")
+  filename       String
+  filepath       String
+  uploaderId     Int          @map("uploader_id")
+  duration       Int          @default(0)
+  uploadedAt     DateTime     @default(now()) @map("uploaded_at")
+  uploader       User         @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+  playlistSongs  PlaylistSong[]
+
+  @@map("songs")
+}
+
+model Playlist {
+  id          Int          @id @default(autoincrement())
+  name        String
+  ownerId     Int          @map("owner_id")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  owner       User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  playlistSongs PlaylistSong[]
+
+  @@map("playlists")
+}
+
+model PlaylistSong {
+  playlistId Int      @map("playlist_id")
+  songId     Int      @map("song_id")
+  position   Int
+  playlist   Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  song       Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  @@id([playlistId, songId])
+  @@map("playlist_songs")
+}

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= siteSettings.siteName %></title>
+    <link rel="stylesheet" href="<%= googleFontHref %>" />
+    <link rel="stylesheet" href="/public/css/style.css?v=20260946" />
+    <style><%- siteCss %></style>
+    <%- include('partials/pwa-head') %>
+  </head>
+  <body class="theme-dark home-page visual-<%= siteSettings.visualStyle || 'aurora' %>">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand"><%- include('partials/welcome-user') %><a href="/" class="brand-text"><span class="brand-emoji"><%= siteSettings.headerEmoji || '🎧' %></span> <%= siteSettings.siteName %></a></div>
+        <nav class="nav-links" aria-label="Navegación principal">
+          <a class="nav-library" href="/library">Biblioteca</a>
+          <a class="nav-videos" href="/videos">Vídeos</a>
+          <% if (user) { %>
+            <a class="nav-upload" href="/songs/upload">Añadir canción</a>
+            <a class="nav-playlists" href="/playlists">Mis Playlists</a>
+          <% } else { %>
+            <a href="/auth/login">Iniciar sesión</a>
+            <a href="/auth/register">Registrarse</a>
+          <% } %>
+          <%- include('partials/nav-account-actions') %>
+        </nav>
+      </div>
+    </header>
+
+    <main class="home-main container">
+      <% if (flash) { %><div class="toast toast-<%= flash.type %>"><%= flash.message %></div><% } %>
+      <section class="home-hero">
+        <div class="home-hero-copy">
+          <span class="eyebrow"><span class="eyebrow-dot"></span> Tu sala sonora</span>
+          <h1><%= siteSettings.heroText %></h1>
+          <p><%= siteSettings.welcomeText %></p>
+          <div class="home-actions">
+            <a class="primary-btn" href="/library"><%= siteSettings.secondaryButtonText || 'Explorar la biblioteca' %></a>
+            <% if (user) { %>
+              <a class="secondary-btn" href="/songs/upload">Añadir una canción</a>
+            <% } else { %>
+              <a class="secondary-btn" href="/auth/register">Crear mi cuenta</a>
+            <% } %>
+            <a class="secondary-btn" href="/public/offline.html">📁 Archivos del dispositivo</a>
+          </div>
+          <div class="home-note"><span class="home-note-mark">✦</span><span>Audio, vídeo y playlists en un mismo lugar.</span></div>
+        </div>
+        <div class="home-hero-art">
+          <% if (siteSettings.heroImagePath) { %>
+            <img src="<%= siteSettings.heroImagePath %>" alt="Imagen principal de <%= siteSettings.siteName %>" />
+          <% } else { %>
+            <div class="home-art-placeholder"><span>♫</span><strong>Haz que tu música tenga una imagen.</strong><small>El administrador puede subir una portada desde Apariencia.</small></div>
+          <% } %>
+          <% if (featuredVideo) { %>
+            <div class="home-floating-card"><span>Último vídeo</span><strong><%= featuredVideo.title %></strong><a href="/videos">Ver sala visual →</a></div>
+          <% } %>
+        </div>
+      </section>
+
+      <section class="home-feature-row">
+        <article><span class="home-feature-icon">◈</span><h2>Descubre</h2><p>Encuentra canciones por título, artista o formato.</p></article>
+        <article><span class="home-feature-icon">◎</span><h2>Organiza</h2><p>Crea playlists que mezclan audio y vídeo.</p></article>
+        <article><span class="home-feature-icon">↗</span><h2>Comparte</h2><p>Tu biblioteca personal, con tu propio criterio.</p></article>
+      </section>
+    </main>
+    <%- include('partials/copyright-notice') %>
+    <%- include('partials/global-player') %>
+    <%- include('partials/floating-home') %>
+  </body>
+</html>

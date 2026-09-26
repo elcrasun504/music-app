@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= playlist.name %> | <%= siteSettings.siteName %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/public/css/style.css" />
+  </head>
+  <body
+    class="theme-dark"
+    style="--bg: <%= siteSettings.backgroundColor %>; --panel: <%= siteSettings.cardColor %>; --primary: <%= siteSettings.accentColor %>; --font-body: '<%= siteSettings.typography %>', 'Inter', 'Segoe UI', sans-serif;"
+  >
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <% if (siteSettings.logoPath) { %>
+            <a href="/" aria-label="Volver a la portada">
+              <img src="<%= siteSettings.logoPath %>" alt="<%= siteSettings.siteName %>" class="brand-logo" />
+            </a>
+          <% } else { %>
+            <a href="/" class="brand-text"><%= siteSettings.siteName %></a>
+          <% } %>
+        </div>
+        <nav class="nav-links">
+          <a href="/">Biblioteca</a>
+          <a href="/playlists">Mis playlists</a>
+          <% if (user && user.role === 'admin') { %>
+            <a href="/admin">Panel de administrador</a>
+          <% } %>
+          <form action="/auth/logout" method="POST">
+            <button type="submit">Cerrar sesión</button>
+          </form>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container" data-playlist-id="<%= playlist.id %>">
+      <% if (flash) { %>
+        <div class="toast toast-<%= flash.type %>"><%= flash.message %></div>
+      <% } %>
+
+      <section class="section-header">
+        <div>
+          <h1><%= playlist.name %></h1>
+          <p class="muted">Reproducción secuencial de esta playlist</p>
+        </div>
+
+        <div class="playlist-detail-actions">
+          <a class="secondary-btn" href="/playlists">Volver</a>
+          <button type="button" id="open-add-songs" class="primary-btn small-btn">Agregar canciones</button>
+          <form action="/playlists/<%= playlist.id %>/rename" method="POST" class="inline-form">
+            <input type="text" name="name" value="<%= playlist.name %>" required />
+            <button class="primary-btn small-btn" type="submit">Renombrar</button>
+          </form>
+          <button
+            type="button"
+            class="danger-btn small-btn confirm-trigger"
+            data-confirm-form="delete-playlist-form-<%= playlist.id %>"
+            data-confirm-title="¿Seguro que quieres eliminar '<%= playlist.name %>'?"
+            data-confirm-message="Se eliminará la playlist y sus referencias, pero no las canciones."
+          >
+            Eliminar playlist
+          </button>
+          <form id="delete-playlist-form-<%= playlist.id %>" action="/playlists/<%= playlist.id %>/delete" method="POST" class="hidden"></form>
+        </div>
+      </section>
+
+      <% if (songs.length === 0) { %>
+        <div class="empty-state">
+          Esta playlist todavía está vacía. Añade canciones desde la biblioteca.
+        </div>
+      <% } else { %>
+        <section class="panel card-soft" style="padding: 1rem; margin-bottom: 1.5rem;">
+          <audio id="playlist-audio" controls preload="metadata"></audio>
+        </section>
+
+        <section class="track-list">
+          <% songs.forEach((song, index) => { %>
+            <div class="track-item" data-track-src="<%= song.filepath %>" data-track-index="<%= index %>">
+              <div class="track-info">
+                <strong>#<%= index + 1 %> <%= song.title %></strong>
+                <span class="muted"><%= song.artist %> · por <%= song.uploader_username %></span>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="secondary-btn small-btn" data-play-track="<%= index %>">Reproducir</button>
+                <form action="/playlists/<%= playlist.id %>/remove-song/<%= song.id %>" method="POST">
+                  <button class="ghost-btn small-btn" type="submit">Quitar de esta playlist</button>
+                </form>
+              </div>
+            </div>
+          <% }); %>
+        </section>
+      <% } %>
+    </main>
+
+    <div class="modal-backdrop" id="add-songs-modal" role="dialog" aria-modal="true" aria-labelledby="add-songs-title">
+      <div class="modal-card add-songs-card">
+        <div class="modal-header">
+          <h3 id="add-songs-title">Agregar canciones</h3>
+          <button type="button" class="secondary-btn small-btn" id="close-add-songs">Cerrar</button>
+        </div>
+
+        <input id="playlist-song-search" type="search" placeholder="Buscar canciones..." />
+        <div id="playlist-song-list" class="song-picker-list"></div>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" id="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+      <div class="modal-card">
+        <h3 id="confirm-modal-title">Confirmación</h3>
+        <p id="confirm-modal-message">¿Estás seguro?</p>
+        <div class="modal-actions">
+          <button type="button" class="secondary-btn small-btn" id="confirm-modal-cancel">Cancelar</button>
+          <button type="button" class="danger-btn small-btn" id="confirm-modal-confirm">Confirmar</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="/public/js/main.js"></script>
+  </body>
+</html>

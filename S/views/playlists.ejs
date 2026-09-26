@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mis playlists | <%= siteSettings.siteName %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="<%= googleFontHref %>" />
+    <link rel="stylesheet" href="/public/css/style.css?v=20260946" />
+    <style><%- siteCss %></style>
+    <%- include('partials/pwa-head') %>
+  </head>
+  <body
+    class="theme-dark"
+    style="--bg: <%= siteSettings.backgroundColor %>; --panel: <%= siteSettings.cardColor %>; --primary: <%= siteSettings.accentColor %>; --font-body: '<%= siteSettings.typography %>', 'Inter', 'Segoe UI', sans-serif;"
+  >
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <%- include('partials/welcome-user') %>
+          <% if (siteSettings.logoPath) { %>
+            <a href="/" aria-label="Volver a la portada">
+              <img src="<%= siteSettings.logoPath %>" alt="<%= siteSettings.siteName %>" class="brand-logo" />
+            </a>
+          <% } else { %>
+            <a href="/" class="brand-text"><%= siteSettings.siteName %></a>
+          <% } %>
+        </div>
+        <nav class="nav-links">
+          <a class="nav-library" href="/library">Biblioteca</a>
+          <a class="nav-videos" href="/videos">Vídeos</a>
+          <a href="/songs/upload">Subir canción</a>
+          <a href="/profile">Mi perfil</a>
+          <%- include('partials/nav-account-actions') %>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <% if (flash) { %>
+        <div class="toast toast-<%= flash.type %>"><%= flash.message %></div>
+      <% } %>
+
+      <section class="section-header">
+        <h1>Mis playlists</h1>
+        <a class="primary-btn" href="/library">Volver a la biblioteca</a>
+      </section>
+
+      <% if (error) { %>
+        <div class="notice error"><%= error %></div>
+      <% } %>
+
+      <section class="panel card-soft" style="padding: 1.25rem; margin-bottom: 1.5rem;">
+        <h2>Crear playlist</h2>
+        <form action="/playlists/create" method="POST" class="inline-form">
+          <input type="text" name="name" placeholder="Nombre de la playlist" required />
+          <button class="primary-btn" type="submit" aria-label="Crear playlist" title="Crear playlist">➕</button>
+        </form>
+      </section>
+
+      <section class="playlist-list">
+        <% if (playlists.length === 0) { %>
+          <div class="empty-state">
+            Aún no hay playlists — crea la primera.
+          </div>
+        <% } else { %>
+          <% playlists.forEach((playlist) => { %>
+            <article class="playlist-card">
+              <div class="playlist-info">
+                <h3><%= playlist.name %></h3>
+                <span class="muted">Playlist creada el <%= new Date(playlist.createdAt).toLocaleDateString('es-ES') %></span>
+              </div>
+
+              <div class="playlist-actions">
+                <a class="secondary-btn small-btn" href="/playlists/<%= playlist.id %>">Ver playlist</a>
+
+                <form class="inline-form" action="/playlists/<%= playlist.id %>/rename" method="POST">
+                  <input type="text" name="name" value="<%= playlist.name %>" required />
+                  <button class="primary-btn small-btn" type="submit" aria-label="Renombrar playlist" title="Renombrar playlist">✏️</button>
+                </form>
+
+                <button
+                  type="button"
+                  class="danger-btn small-btn confirm-trigger"
+                  data-confirm-form="delete-playlist-form-<%= playlist.id %>"
+                  data-confirm-title="¿Seguro que quieres eliminar '<%= playlist.name %>'?"
+                  data-confirm-message="Se eliminará la playlist y sus referencias. Las canciones no se borrarán del catálogo global."
+                  aria-label="Eliminar playlist"
+                  title="Eliminar playlist"
+                >
+                  🗑️
+                </button>
+
+                <form id="delete-playlist-form-<%= playlist.id %>" action="/playlists/<%= playlist.id %>/delete" method="POST" class="hidden"></form>
+              </div>
+            </article>
+          <% }); %>
+        <% } %>
+      </section>
+    </main>
+
+    <%- include('partials/copyright-notice') %>
+
+    <%- include('partials/global-player') %>
+    <%- include('partials/floating-home') %>
+
+    <div class="modal-backdrop" id="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+      <div class="modal-card">
+        <h3 id="confirm-modal-title">Confirmación</h3>
+        <p id="confirm-modal-message">¿Estás seguro?</p>
+        <div class="modal-actions">
+          <button type="button" class="secondary-btn small-btn" id="confirm-modal-cancel" aria-label="Cancelar" title="Cancelar">❌</button>
+          <button type="button" class="danger-btn small-btn" id="confirm-modal-confirm" aria-label="Confirmar" title="Confirmar">✅</button>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>

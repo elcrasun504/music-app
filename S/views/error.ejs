@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Error | <%= siteSettings.siteName %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="<%= googleFontHref %>" />
+    <link rel="stylesheet" href="/public/css/style.css?v=20260946" />
+    <style><%- siteCss %></style>
+    <%- include('partials/pwa-head') %>
+  </head>
+  <body
+    class="theme-dark"
+    style="--bg: <%= siteSettings.backgroundColor %>; --panel: <%= siteSettings.cardColor %>; --primary: <%= siteSettings.accentColor %>; --font-body: '<%= siteSettings.typography %>', 'Inter', 'Segoe UI', sans-serif;"
+  >
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <%- include('partials/welcome-user') %>
+          <% if (siteSettings.logoPath) { %>
+            <a href="/" aria-label="Volver a la portada">
+              <img src="<%= siteSettings.logoPath %>" alt="<%= siteSettings.siteName %>" class="brand-logo" />
+            </a>
+          <% } else { %>
+            <a href="/" class="brand-text"><%= siteSettings.siteName %></a>
+          <% } %>
+        </div>
+        <nav class="nav-links"><%- include('partials/nav-account-actions') %></nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="form-box">
+        <h1>Ups...</h1>
+        <% if (flash) { %>
+          <div class="toast toast-<%= flash.type %>"><%= flash.message %></div>
+        <% } %>
+        <div class="notice error"><%= message %></div>
+        <div class="form-actions">
+          <a class="primary-btn" href="/library">Volver a la biblioteca</a>
+        </div>
+      </section>
+    </main>
+    <%- include('partials/global-player') %>
+    <%- include('partials/floating-home') %>
+  </body>
+</html>

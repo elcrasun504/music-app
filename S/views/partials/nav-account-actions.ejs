@@ -1,0 +1,8 @@
+<% if (user && user.role === 'admin') { %>
+  <a class="nav-admin" href="/admin" aria-label="Panel de administrador" title="Panel de administrador">👮</a>
+<% } %>
+<% if (user) { %>
+  <form class="nav-logout" action="/auth/logout" method="POST">
+    <button type="submit" aria-label="Cerrar sesión" title="Cerrar sesión">🚪</button>
+  </form>
+<% } %>

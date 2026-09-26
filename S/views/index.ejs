@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= siteSettings.siteName %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='80'><%= encodeURIComponent(siteSettings.siteEmoji || '🎵') %></text></svg>" />
+    <link rel="stylesheet" href="<%= googleFontHref %>" />
+    <link rel="stylesheet" href="/public/css/style.css?v=20260946" />
+    <style><%- siteCss %></style>
+    <%- include('partials/pwa-head') %>
+  </head>
+  <body
+    class="theme-dark visual-<%= siteSettings.visualStyle || 'aurora' %> <%= siteSettings.seasonTheme ? 'season-mode' : '' %>"
+    style="--bg: <%= siteSettings.backgroundColor %>; --panel: <%= siteSettings.cardColor %>; --primary: <%= siteSettings.accentColor %>; --font-body: '<%= siteSettings.bodyFont %>', 'Inter', 'Segoe UI', sans-serif; --font-heading: '<%= siteSettings.headingFont %>', 'Sora', 'Segoe UI', sans-serif; --font-scale: <%= { small: 0.92, medium: 1, large: 1.08, xlarge: 1.2 }[siteSettings.fontScale || 'medium'] %>;"
+  >
+    <% if (siteSettings.seasonTheme) { %>
+      <div class="season-overlay" aria-hidden="true">
+        <span class="snowflake">❄</span><span class="snowflake">❄</span><span class="snowflake">❄</span>
+      </div>
+    <% } %>
+
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <%- include('partials/welcome-user') %>
+          <% if (siteSettings.logoPath) { %>
+            <a href="/" aria-label="Volver a la portada" class="brand-logo-link">
+              <img src="<%= siteSettings.logoPath %>" alt="<%= siteSettings.siteName %>" class="brand-logo" />
+            </a>
+          <% } else { %>
+            <a href="/" class="brand-text"><span class="brand-emoji"><%= siteSettings.headerEmoji || '🎧' %></span> <%= siteSettings.siteName %></a>
+          <% } %>
+        </div>
+
+        <nav class="nav-links">
+          <% if (user) { %>
+            <a class="nav-library" href="/library">Biblioteca</a>
+            <a class="nav-videos" href="/videos">Vídeos</a>
+            <a class="nav-upload" href="/songs/upload"><%= siteSettings.primaryButtonText || 'Añadir canción' %></a>
+            <a class="nav-playlists" href="/playlists"><%= siteSettings.playlistsTitle || 'Mis Playlists' %></a>
+          <% } else { %>
+            <a class="nav-library" href="/library">Biblioteca</a>
+            <a class="nav-videos" href="/videos">Vídeos</a>
+            <a href="/auth/login">Iniciar sesión</a>
+            <a href="/auth/register">Registrarse</a>
+          <% } %>
+          <%- include('partials/nav-account-actions') %>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <% if (flash) { %>
+        <div class="toast toast-<%= flash.type %>"><%= flash.message %></div>
+      <% } %>
+
+      <% if (user && userStats) { %>
+        <section class="stats-bar" aria-label="Estadísticas del usuario">
+          <div class="stat-card">
+            <span class="stat-icon">🎵</span>
+            <div>
+              <strong><%= userStats.songCount %></strong>
+              <small>Canciones</small>
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">📚</span>
+            <div>
+              <strong><%= userStats.playlistCount %></strong>
+              <small>Playlists</small>
+            </div>
+          </div>
+        </section>
+      <% } %>
+
+      <section class="hero">
+        <div class="hero-badge"><%= siteSettings.heroEmoji || '✨' %> <%= siteSettings.siteEmoji || '🎵' %></div>
+        <h1><%= siteSettings.heroText %></h1>
+        <p><%= siteSettings.welcomeText %></p>
+      </section>
+
+      <section class="panel">
+        <div class="library-header">
+          <h2><%= siteSettings.libraryTitle || 'Biblioteca' %></h2>
+          <div class="library-actions">
+            <% if (user) { %>
+              <button type="button" class="secondary-btn small-btn" id="surprise-button" aria-label="Sorpréndeme" title="Sorpréndeme">🎲</button>
+              <a class="primary-btn" href="/songs/upload"><%= siteSettings.primaryButtonText || 'Añadir canción' %></a>
+            <% } %>
+          </div>
+        </div>
+
+        <div class="search-wrap">
+          <input id="library-search" type="search" placeholder="Buscar por título o artista" aria-label="Buscar canciones" />
+          <form class="library-sort" action="/library" method="GET">
+            <label for="library-sort-select">Ordenar</label>
+            <select id="library-sort-select" name="sort" onchange="this.form.submit()">
+              <option value="newest" <%= sort === 'newest' ? 'selected' : '' %>>Más recientes</option>
+              <option value="az" <%= sort === 'az' ? 'selected' : '' %>>Nombre A-Z</option>
+              <option value="za" <%= sort === 'za' ? 'selected' : '' %>>Nombre Z-A</option>
+            </select>
+          </form>
+        </div>
+
+        <div class="easter-egg hidden" id="easter-egg">🎉 ¡Modo Cholu activado! La música siempre tiene buen gusto.</div>
+
+        <% const visibleSongs = songs.filter((song) => !song.isHiddenForViewer); %>
+        <% if (visibleSongs.length === 0) { %>
+          <div class="empty-state">
+            <%= siteSettings.emptyStateText || 'Aún no hay canciones — ¡sube la primera!' %>
+          </div>
+        <% } else { %>
+          <div class="song-grid">
+            <% visibleSongs.forEach((song) => { %>
+              <article class="song-card <%= song.mediaType === 'video' ? 'video-card' : '' %>" data-search="<%= song.title %> <%= song.artist %>" data-song-id="<%= song.id %>" data-song-title="<%= song.title %>" data-song-artist="<%= song.artist %>" data-song-cover="<%= song.coverPath || '/public/images/placeholder-cover.svg' %>" data-song-src="<%= song.filepath %>" data-song-duration="<%= song.duration || 0 %>" data-song-type="<%= song.mediaType || 'audio' %>">
+                <div class="song-cover-wrap">
+                  <% if (song.mediaType === 'video') { %>
+                    <video class="song-cover song-video" src="<%= song.filepath %>" preload="<%= siteSettings.mediaPreload || 'metadata' %>" controls playsinline></video>
+                  <% } else { %>
+                    <img src="<%= song.coverPath || '/public/images/placeholder-cover.svg' %>" alt="Carátula de <%= song.title %>" class="song-cover" onerror="this.onerror=null;this.src='/public/images/placeholder-cover.svg';" />
+                  <% } %>
+                </div>
+
+                <div class="song-meta">
+                  <span class="pill"><%= song.artist %></span>
+                  <span>por <a href="/profile/<%= encodeURIComponent(song.uploader_username) %>"><%= song.uploader_username %></a></span>
+                </div>
+
+                <h3 class="song-title"><%= song.title %> <% if (song.mediaType === 'video') { %><span class="media-badge">VIDEO</span><% } %></h3>
+                <div class="player-mini-row">
+                  <button type="button" class="icon-btn" data-play-song="<%= song.id %>" aria-label="Reproducir <%= song.title %>" title="Reproducir <%= song.title %>">🎵</button>
+                  <span class="song-duration"><%= song.duration ? Math.floor(song.duration / 60) + ':' + String(song.duration % 60).padStart(2, '0') : '0:00' %></span>
+                </div>
+
+                <% if (user) { %>
+                  <div class="song-actions">
+                    <% if (user.id === song.uploader_id) { %><button type="button" class="secondary-btn small-btn" data-toggle-edit="<%= song.id %>" aria-label="Editar para mí" title="Editar para mí">✏️</button><% } %>
+                    <% if (user.role === 'admin') { %><button type="button" class="danger-btn small-btn confirm-trigger" data-confirm-form="delete-song-form-<%= song.id %>" data-confirm-title="¿Eliminar '<%= song.title %>'?" data-confirm-message="Solo los administradores pueden borrar canciones." aria-label="Eliminar <%= song.title %>" title="Eliminar">🗑️</button><% } %>
+                    <form action="/songs/<%= song.id %>/visibility" method="POST"><input type="hidden" name="hidden" value="true" /><button type="submit" class="ghost-btn small-btn" aria-label="Ocultar para mí" title="Ocultar para mí">🙈</button></form>
+                  </div>
+
+                  <% if (user.id === song.uploader_id) { %><form class="edit-song-form hidden" data-edit-form="<%= song.id %>" method="POST" action="/songs/<%= song.id %>/edit">
+                    <label>
+                      Título
+                      <input name="title" type="text" value="<%= song.title %>" required />
+                    </label>
+                    <label>
+                      Artista
+                      <input name="artist" type="text" value="<%= song.artist %>" required />
+                    </label>
+                    <button class="primary-btn small-btn" type="submit" aria-label="Guardar" title="Guardar">💾</button>
+                  </form>
+                  <% } %>
+
+                  <% if (user.role === 'admin') { %><form id="delete-song-form-<%= song.id %>" method="POST" action="/songs/<%= song.id %>/delete" class="hidden"></form><% } %>
+                <% } %>
+
+                <% if (user) { %>
+                  <% if (userPlaylists.length > 0) { %>
+                    <form class="playlist-form" action="/playlists/add-song" method="POST">
+                      <input type="hidden" name="song_id" value="<%= song.id %>" />
+                      <select name="playlist_id" required>
+                        <option value="">Añadir a una playlist</option>
+                        <% userPlaylists.forEach((playlist) => { %>
+                          <option value="<%= playlist.id %>"><%= playlist.name %></option>
+                        <% }); %>
+                      </select>
+                      <button class="primary-btn" type="submit" aria-label="Agregar a playlist" title="Agregar a playlist">➕</button>
+                    </form>
+                  <% } else { %>
+                    <p class="muted">Crea una playlist en <a href="/playlists">Mis playlists</a>.</p>
+                  <% } %>
+                <% } %>
+              </article>
+            <% }); %>
+          </div>
+        <% } %>
+        <% const hiddenSongs = songs.filter((song) => song.isHiddenForViewer); %>
+        <% if (user && hiddenSongs.length) { %>
+          <section class="hidden-library" aria-label="Canciones ocultas para ti">
+            <div class="section-header"><div><span class="eyebrow">Solo para ti</span><h3>Canciones ocultas</h3></div><span class="muted"><%= hiddenSongs.length %> ocultas</span></div>
+            <div class="hidden-song-list"><% hiddenSongs.forEach((song) => { %><div class="hidden-song-row"><span><strong><%= song.title %></strong><small><%= song.artist %></small></span><form action="/songs/<%= song.id %>/visibility" method="POST"><input type="hidden" name="hidden" value="false" /><button class="secondary-btn small-btn" type="submit" aria-label="Mostrar" title="Mostrar">👁️</button></form></div><% }) %></div>
+          </section>
+        <% } %>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p><%= siteSettings.footerText || 'Hecho con ❤️ para la comunidad.' %></p>
+      <%- include('partials/copyright-notice') %>
+    </footer>
+
+    <%- include('partials/global-player') %>
+    <%- include('partials/floating-home') %>
+
+    <div class="modal-backdrop" id="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+      <div class="modal-card">
+        <h3 id="confirm-modal-title">Confirmación</h3>
+        <p id="confirm-modal-message">¿Estás seguro?</p>
+        <div class="modal-actions">
+          <button type="button" class="secondary-btn small-btn" id="confirm-modal-cancel" aria-label="Cancelar" title="Cancelar">❌</button>
+          <button type="button" class="danger-btn small-btn" id="confirm-modal-confirm" aria-label="Confirmar" title="Confirmar">✅</button>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>

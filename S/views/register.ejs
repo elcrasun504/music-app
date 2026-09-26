@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registro | <%= siteSettings.siteName %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="<%= googleFontHref %>" />
+    <link rel="stylesheet" href="/public/css/style.css?v=20260946" />
+    <style><%- siteCss %></style>
+    <%- include('partials/pwa-head') %>
+  </head>
+  <body
+    class="theme-dark"
+    style="--bg: <%= siteSettings.backgroundColor %>; --panel: <%= siteSettings.cardColor %>; --primary: <%= siteSettings.accentColor %>; --font-body: '<%= siteSettings.typography %>', 'Inter', 'Segoe UI', sans-serif;"
+  >
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <% if (siteSettings.logoPath) { %>
+            <a href="/" aria-label="Volver a la portada">
+              <img src="<%= siteSettings.logoPath %>" alt="<%= siteSettings.siteName %>" class="brand-logo" />
+            </a>
+          <% } else { %>
+            <a href="/" class="brand-text"><%= siteSettings.siteName %></a>
+          <% } %>
+        </div>
+        <nav class="nav-links">
+          <a href="/auth/login">Iniciar sesión</a>
+          <%- include('partials/nav-account-actions') %>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="form-box">
+        <h1>Crear cuenta</h1>
+
+        <% if (flash) { %>
+          <div class="toast toast-<%= flash.type %>"><%= flash.message %></div>
+        <% } %>
+
+        <% if (error) { %>
+          <div class="notice error"><%= error %></div>
+        <% } %>
+
+        <form action="/auth/register" method="POST" id="register-form" novalidate>
+          <label>
+            Nombre de usuario
+            <input type="text" name="username" id="username-input" placeholder="mi_usuario" required />
+            <small id="username-status" class="field-status"></small>
+          </label>
+
+          <label>
+            Email
+            <input type="email" name="email" id="email-input" placeholder="tu@email.com" required />
+          </label>
+
+          <label>
+            Contraseña
+            <input type="password" name="password" placeholder="Mínimo 6 caracteres" required />
+          </label>
+
+          <div class="form-actions">
+            <button class="primary-btn" type="submit" aria-label="Registrarme" title="Registrarme">👤</button>
+            <a class="secondary-btn" href="/auth/login">Ya tengo cuenta</a>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <%- include('partials/global-player') %>
+
+    <script>
+      const usernameInput = document.getElementById('username-input');
+      const usernameStatus = document.getElementById('username-status');
+      const registerForm = document.getElementById('register-form');
+      let usernameTimer = null;
+
+      function setUsernameStatus(message, ok) {
+        if (!usernameStatus) return;
+        usernameStatus.textContent = message;
+        usernameStatus.style.color = ok ? '#34d399' : '#f87171';
+      }
+
+      function validateUsername(value) {
+        return /^[a-zA-Z0-9_-]{3,20}$/.test(value);
+      }
+
+      usernameInput?.addEventListener('input', () => {
+        const value = usernameInput.value.trim();
+
+        if (!value) {
+          setUsernameStatus('', true);
+          return;
+        }
+
+        if (!validateUsername(value)) {
+          setUsernameStatus('Solo letras, números, guiones y guiones bajos (3-20).', false);
+          return;
+        }
+
+        clearTimeout(usernameTimer);
+        usernameTimer = setTimeout(async () => {
+          try {
+            const response = await fetch(`/auth/check-username?username=${encodeURIComponent(value)}`);
+            const data = await response.json();
+            setUsernameStatus(data.message, data.available);
+          } catch (error) {
+            setUsernameStatus('No se pudo comprobar el nombre.', false);
+          }
+        }, 400);
+      });
+
+      registerForm?.addEventListener('submit', (event) => {
+        const username = usernameInput.value.trim();
+        const emailInput = document.getElementById('email-input');
+        const emailValue = emailInput.value.trim();
+
+        if (!validateUsername(username)) {
+          event.preventDefault();
+          setUsernameStatus('Nombre de usuario inválido.', false);
+          return;
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) {
+          event.preventDefault();
+          emailInput.setCustomValidity('Introduce un correo válido.');
+          emailInput.reportValidity();
+        }
+      });
+    </script>
+  </body>
+</html>

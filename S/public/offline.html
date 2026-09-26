@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0F0F12" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Cholumusica" />
+    <link rel="manifest" href="/public/manifest.webmanifest" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/public/icons/icon-180.png" />
+    <link rel="stylesheet" href="/public/css/style.css?v=20260946" />
+    <link rel="stylesheet" href="/pwa/site.css" />
+    <title>Archivos del dispositivo | Cholumusica</title>
+  </head>
+  <body class="theme-dark offline-shell">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand"><a href="/" class="brand-text">🎧 Cholumusica</a></div>
+        <span class="offline-status-badge">Sin conexión</span>
+      </div>
+    </header>
+
+    <main class="container offline-main">
+      <section class="form-box offline-panel">
+        <span class="eyebrow"><span class="eyebrow-dot"></span> Reproductor local</span>
+        <h1>Archivos del dispositivo</h1>
+        <p class="muted">Elige audio guardado en tu dispositivo para escucharlo sin conexión.</p>
+        <input id="offline-file-input" type="file" accept="audio/*,.mp3,.m4a,.wav,.ogg,.flac" multiple hidden />
+        <div class="form-actions offline-actions">
+          <button id="offline-choose-files" class="primary-btn" type="button" aria-label="Elegir archivos" title="Elegir archivos">📁</button>
+          <button id="offline-retry" class="secondary-btn" type="button" aria-label="Volver a conectar" title="Volver a conectar">🔄</button>
+        </div>
+        <p id="offline-status" class="notice info" role="status" aria-live="polite">Los archivos se reproducen en este dispositivo y no se suben al servidor.</p>
+        <p class="copyright-notice" role="note">© Reproduce únicamente archivos propios o con autorización y respeta los derechos de su titular.</p>
+        <ul id="offline-track-list" class="offline-track-list" aria-label="Archivos seleccionados"></ul>
+        <audio id="offline-audio" class="offline-audio" controls preload="metadata"></audio>
+      </section>
+    </main>
+
+    <script src="/public/js/offline-player.js?v=20260940"></script>
+  </body>
+</html>

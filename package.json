@@ -1,0 +1,38 @@
+{
+  "name": "cholumusica",
+  "version": "1.0.0",
+  "description": "Aplicación web para compartir música",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "db:push": "prisma db push",
+    "db:generate": "prisma generate",
+    "make:admin": "node scripts/make-admin.js"
+  },
+  "keywords": [
+    "music",
+    "express",
+    "sqlite",
+    "prisma"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@prisma/client": "^6.0.0",
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-rate-limit": "^8.7.0",
+    "express-session": "^1.18.1",
+    "file-type": "^16.5.4",
+    "multer": "^2.0.2",
+    "music-metadata": "^11.16.1",
+    "prisma": "^6.0.0",
+    "uuid": "^11.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

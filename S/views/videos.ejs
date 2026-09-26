@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vídeos | <%= siteSettings.siteName %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="stylesheet" href="<%= googleFontHref %>" />
+    <link rel="stylesheet" href="/public/css/style.css?v=20260946" />
+    <style><%- siteCss %></style>
+    <%- include('partials/pwa-head') %>
+  </head>
+  <body class="theme-dark video-page visual-<%= siteSettings.visualStyle || 'aurora' %>">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <%- include('partials/welcome-user') %>
+          <% if (siteSettings.logoPath) { %>
+            <a href="/" aria-label="Volver a la portada"><img src="<%= siteSettings.logoPath %>" alt="<%= siteSettings.siteName %>" class="brand-logo" /></a>
+          <% } else { %>
+            <a href="/" class="brand-text"><span class="brand-emoji"><%= siteSettings.headerEmoji || '🎧' %></span> <%= siteSettings.siteName %></a>
+          <% } %>
+        </div>
+        <nav class="nav-links" aria-label="Navegación principal">
+          <% if (user) { %>
+            <a class="nav-library" href="/library">Biblioteca</a>
+            <a class="nav-current nav-videos" href="/videos">Vídeos</a>
+            <a class="nav-playlists" href="/playlists"><%= siteSettings.playlistsTitle || 'Mis Playlists' %></a>
+            <a class="nav-upload" href="/songs/upload">Subir</a>
+          <% } else { %>
+            <a class="nav-library" href="/library">Biblioteca</a>
+            <a class="nav-current nav-videos" href="/videos">Vídeos</a>
+            <a href="/auth/login">Iniciar sesión</a>
+            <a href="/auth/register">Registrarse</a>
+          <% } %>
+          <%- include('partials/nav-account-actions') %>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container video-container">
+      <% if (flash) { %><div class="toast toast-<%= flash.type %>"><%= flash.message %></div><% } %>
+      <section class="video-hero">
+        <div class="video-hero-copy">
+          <span class="eyebrow"><span class="eyebrow-dot"></span> Cholu visual</span>
+          <h1>Vídeos que tienen algo que decir.</h1>
+          <p>Sesiones, directos y momentos visuales de la comunidad, reunidos en una sala hecha para mirar y escuchar.</p>
+          <div class="video-hero-meta"><strong><%= videos.length %></strong><span>vídeos en la biblioteca</span></div>
+        </div>
+        <% if (videos.length) { %>
+          <div class="video-hero-stage">
+            <video src="<%= videos[0].filepath %>" poster="<%= videos[0].coverPath || '' %>" controls preload="<%= siteSettings.mediaPreload || 'metadata' %>" playsinline></video>
+            <div class="video-stage-caption"><span>Último estreno</span><strong><%= videos[0].title %></strong></div>
+          </div>
+        <% } else { %>
+          <div class="video-hero-empty"><span>◉</span><strong>Tu sala visual está esperando.</strong><small>Sube el primer MP4 para inaugurarla.</small></div>
+        <% } %>
+      </section>
+
+      <section class="video-library-head">
+        <div><span class="eyebrow">Explorar</span><h2>La sala de vídeos</h2></div>
+        <div class="video-library-tools">
+          <label class="video-search"><span aria-hidden="true">⌕</span><input id="library-search" type="search" placeholder="Buscar vídeo o artista" aria-label="Buscar vídeos" /></label>
+          <span class="video-count"><%= videos.length %> piezas</span>
+        </div>
+      </section>
+
+      <% if (!videos.length) { %>
+        <div class="empty-state video-empty-state"><strong>Aún no hay vídeos.</strong><span>Los MP4 que subas aparecerán aquí con su reproductor.</span><% if (user) { %><a class="primary-btn" href="/songs/upload">Subir un vídeo</a><% } %></div>
+      <% } else { %>
+        <div class="video-grid">
+          <% videos.forEach((video, index) => { %>
+            <article class="video-tile song-card" data-search="<%= video.title %> <%= video.artist %> <%= video.uploader_username %>" data-song-id="<%= video.id %>" data-song-title="<%= video.title %>" data-song-artist="<%= video.artist || 'Vídeo de la comunidad' %>" data-song-cover="<%= video.coverPath || '/public/images/placeholder-cover.svg' %>" data-song-src="<%= video.filepath %>" data-song-duration="<%= video.duration || 0 %>" data-song-type="video">
+              <div class="video-tile-media"><video src="<%= video.filepath %>" poster="<%= video.coverPath || '' %>" preload="<%= siteSettings.mediaPreload || 'metadata' %>" controls playsinline></video><span class="video-index">0<%= index + 1 %></span></div>
+              <div class="video-tile-copy"><div class="video-tile-kicker"><span>MP4</span><span>por <%= video.uploader_username %></span></div><h3><%= video.title %></h3><p><%= video.artist || 'Vídeo de la comunidad' %></p></div>
+              <div class="video-tile-actions"><button type="button" class="primary-btn small-btn" data-play-song="<%= video.id %>" aria-label="Reproducir en la barra" title="Reproducir en la barra">🎵</button><% if (user && userPlaylists.length) { %><form action="/playlists/add-song" method="POST"><input type="hidden" name="song_id" value="<%= video.id %>" /><select name="playlist_id" aria-label="Añadir <%= video.title %> a una playlist" required><option value="">Añadir a playlist</option><% userPlaylists.forEach((playlist) => { %><option value="<%= playlist.id %>"><%= playlist.name %></option><% }) %></select></form><% } %></div>
+            </article>
+          <% }) %>
+        </div>
+      <% } %>
+    </main>
+
+    <%- include('partials/copyright-notice') %>
+
+    <%- include('partials/global-player') %>
+    <%- include('partials/floating-home') %>
+  </body>
+</html>

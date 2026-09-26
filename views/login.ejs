@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iniciar sesión | <%= siteSettings.siteName %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/public/css/style.css" />
+  </head>
+  <body
+    class="theme-dark"
+    style="--bg: <%= siteSettings.backgroundColor %>; --panel: <%= siteSettings.cardColor %>; --primary: <%= siteSettings.accentColor %>; --font-body: '<%= siteSettings.typography %>', 'Inter', 'Segoe UI', sans-serif;"
+  >
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <% if (siteSettings.logoPath) { %>
+            <a href="/" aria-label="Volver a la portada">
+              <img src="<%= siteSettings.logoPath %>" alt="<%= siteSettings.siteName %>" class="brand-logo" />
+            </a>
+          <% } else { %>
+            <a href="/" class="brand-text"><%= siteSettings.siteName %></a>
+          <% } %>
+        </div>
+        <nav class="nav-links">
+          <a href="/auth/register">Registrarse</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="form-box">
+        <h1>Inicia sesión</h1>
+
+        <% if (flash) { %>
+          <div class="toast toast-<%= flash.type %>"><%= flash.message %></div>
+        <% } %>
+
+        <% if (error) { %>
+          <div class="notice error"><%= error %></div>
+        <% } %>
+
+        <form action="/auth/login" method="POST">
+          <label>
+            Email o usuario
+            <input type="text" name="email" placeholder="tu@email.com" required />
+          </label>
+
+          <label>
+            Contraseña
+            <input type="password" name="password" placeholder="••••••••" required />
+          </label>
+
+          <label class="checkbox-row">
+            <input type="checkbox" name="remember" value="1" />
+            <span>Recordarme durante 30 días</span>
+          </label>
+
+          <div class="form-actions">
+            <button class="primary-btn" type="submit">Entrar</button>
+            <a class="secondary-btn" href="/auth/register">Crear cuenta</a>
+          </div>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

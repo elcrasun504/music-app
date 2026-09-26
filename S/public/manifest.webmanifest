@@ -1,0 +1,41 @@
+{
+  "id": "/",
+  "name": "Cholumusica",
+  "short_name": "Cholumusica",
+  "description": "Biblioteca y reproductor de música de Cholumusica.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "theme_color": "#0F0F12",
+  "background_color": "#0F0F12",
+  "icons": [
+    {
+      "src": "/public/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/public/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Archivos del dispositivo",
+      "short_name": "Archivos locales",
+      "url": "/public/offline.html",
+      "icons": [
+        {
+          "src": "/public/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Subir canción | <%= siteSettings.siteName %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="<%= googleFontHref %>" />
+    <link rel="stylesheet" href="/public/css/style.css?v=20260946" />
+    <style><%- siteCss %></style>
+    <%- include('partials/pwa-head') %>
+  </head>
+  <body
+    class="theme-dark"
+    style="--bg: <%= siteSettings.backgroundColor %>; --panel: <%= siteSettings.cardColor %>; --primary: <%= siteSettings.accentColor %>; --font-body: '<%= siteSettings.typography %>', 'Inter', 'Segoe UI', sans-serif;"
+  >
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <%- include('partials/welcome-user') %>
+          <% if (siteSettings.logoPath) { %>
+            <a href="/" aria-label="Volver a la portada">
+              <img src="<%= siteSettings.logoPath %>" alt="<%= siteSettings.siteName %>" class="brand-logo" />
+            </a>
+          <% } else { %>
+            <a href="/" class="brand-text"><%= siteSettings.siteName %></a>
+          <% } %>
+        </div>
+        <nav class="nav-links">
+          <a class="nav-library" href="/library">Biblioteca</a>
+          <a class="nav-videos" href="/videos">Vídeos</a>
+          <a href="/playlists">Mis playlists</a>
+          <a href="/profile">Mi perfil</a>
+          <%- include('partials/nav-account-actions') %>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="form-box upload-box">
+        <h1>Subir canción</h1>
+
+        <% if (flash) { %>
+          <div class="toast toast-<%= flash.type %>"><%= flash.message %></div>
+        <% } %>
+
+        <% if (error) { %>
+          <div class="notice error"><%= error %></div>
+        <% } %>
+
+        <% if (successMessage) { %>
+          <div class="notice success"><%= successMessage %></div>
+        <% } %>
+
+        <%- include('partials/copyright-notice') %>
+
+        <div id="upload-status" class="notice info hidden">Selecciona un archivo para empezar.</div>
+
+        <form id="upload-form" class="upload-form">
+          <div id="file-dropzone" class="drop-zone" tabindex="0" role="button" aria-label="Selecciona uno o varios archivos de audio o vídeo">
+            <input id="audio-file-input" type="file" name="audio" accept="audio/*,video/mp4,.mp4" multiple hidden />
+            <div class="drop-zone-inner">
+              <div class="drop-icon">♫</div>
+              <p><strong>Arrastra tus canciones o vídeos</strong></p>
+              <span>MP3, WAV, OGG, M4A y MP4</span>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button id="analyze-button" class="primary-btn" type="submit" aria-label="Analizar canción" title="Analizar canción">🔍</button>
+            <button id="start-batch-button" class="primary-btn hidden" type="button" aria-label="Analizar lote" title="Analizar lote">📦</button>
+            <button id="clear-batch-button" class="secondary-btn" type="button" aria-label="Limpiar" title="Limpiar">🧹</button>
+            <a class="secondary-btn" href="/library">Cancelar</a>
+          </div>
+        </form>
+
+        <div id="batch-queue-panel" class="batch-panel hidden" aria-live="polite">
+          <div class="batch-header">
+            <h3>Cola de subida</h3>
+            <span id="batch-progress-text">0 de 0 canciones procesadas</span>
+          </div>
+          <div class="batch-progress-bar" aria-hidden="true">
+            <span id="batch-progress-bar"></span>
+          </div>
+          <div id="batch-file-list" class="batch-file-list"></div>
+        </div>
+
+        <section id="upload-preview" class="preview-panel hidden" aria-live="polite">
+          <div class="preview-cover-wrap">
+            <img id="cover-preview" src="" alt="Carátula de la canción" class="preview-cover hidden" />
+          </div>
+
+          <div class="preview-fields">
+            <label>
+              Título
+              <input id="meta-title" type="text" />
+            </label>
+            <label>
+              Artista
+              <input id="meta-artist" type="text" />
+            </label>
+            <label>
+              Álbum
+              <input id="meta-album" type="text" />
+            </label>
+            <label>
+              Año
+              <input id="meta-year" type="number" min="1900" max="2100" />
+            </label>
+            <label>
+              Género
+              <input id="meta-genre" type="text" />
+            </label>
+            <label>
+              Duración
+              <input id="meta-duration" type="text" disabled />
+            </label>
+
+            <div class="preview-actions">
+              <button id="confirm-upload-button" class="primary-btn" type="button" aria-label="Confirmar y subir" title="Confirmar y subir">✅</button>
+              <button id="reset-upload-button" class="secondary-btn" type="button" aria-label="Reiniciar" title="Reiniciar">↩️</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="batch-preview-panel" class="batch-preview-panel hidden" aria-live="polite">
+          <div class="batch-header">
+            <h3>Vista previa del lote</h3>
+          </div>
+          <div id="batch-preview-list" class="batch-preview-list"></div>
+          <div id="batch-failed-list" class="batch-failed-list"></div>
+          <div class="preview-actions batching-actions">
+            <button id="confirm-batch-button" class="primary-btn" type="button" aria-label="Confirmar y subir todo" title="Confirmar y subir todo">✅</button>
+            <button id="reset-batch-button" class="secondary-btn" type="button" aria-label="Reiniciar lote" title="Reiniciar lote">↩️</button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <%- include('partials/global-player') %>
+    <%- include('partials/floating-home') %>
+
+  </body>
+</html>

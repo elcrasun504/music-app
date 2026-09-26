@@ -1,0 +1,36 @@
+<aside class="global-player is-empty" id="global-player" aria-label="Reproductor de audio">
+  <div class="global-player-cover-wrap">
+    <img id="global-player-cover" src="/public/images/placeholder-cover.svg" alt="" />
+  </div>
+  <div class="global-player-meta">
+    <strong id="global-player-title">Selecciona una canción</strong>
+    <span id="global-player-artist">Cholumusica</span>
+    <button class="icon-btn player-collapse-btn" type="button" id="global-player-collapse" aria-label="Ocultar controles" aria-expanded="true" title="Ocultar controles">⬆️</button>
+  </div>
+  <div class="global-player-controls">
+    <button class="icon-btn player-control-btn" type="button" id="global-player-previous" aria-label="Canción anterior" title="Canción anterior">⏮️</button>
+    <button class="icon-btn player-play-btn" type="button" id="global-player-toggle" aria-label="Reproducir" title="Reproducir">▶️</button>
+    <button class="icon-btn player-control-btn" type="button" id="global-player-next" aria-label="Siguiente canción" title="Siguiente canción">⏭️</button>
+    <button class="icon-btn player-control-btn player-option-btn is-active" type="button" id="global-player-autoplay" aria-label="Reproducción automática activada" aria-pressed="true" title="Reproducción automática">🔁</button>
+  </div>
+  <div class="global-player-progress-wrap">
+    <div class="global-player-time-row">
+      <span id="global-player-current">0:00</span>
+      <span id="global-player-total">0:00</span>
+    </div>
+    <div class="global-player-progress" id="global-player-progress" role="slider" aria-label="Progreso de la canción" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+      <span id="global-player-progress-bar"></span>
+    </div>
+  </div>
+  <div class="global-player-volume">
+    <button class="icon-btn player-control-btn" type="button" id="global-player-mute" aria-label="Silenciar" title="Silenciar">🔊</button>
+    <input id="global-player-volume" type="range" min="0" max="1" step="0.01" value="1" aria-label="Volumen" />
+  </div>
+  <audio id="global-audio" preload="<%= siteSettings.mediaPreload || 'metadata' %>"></audio>
+</aside>
+<% if (user) { %>
+  <form class="mobile-logout" action="/auth/logout" method="POST">
+    <button type="submit" aria-label="Cerrar sesión" title="Cerrar sesión">🚪</button>
+  </form>
+<% } %>
+<script src="/public/js/main.js?v=20260939"></script>

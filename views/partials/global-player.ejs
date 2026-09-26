@@ -1,0 +1,22 @@
+    <div class="global-player" id="global-player">
+      <div class="global-player-cover-wrap">
+        <img id="global-player-cover" src="/public/images/placeholder-cover.svg" alt="Carátula actual" />
+      </div>
+      <div class="global-player-meta">
+        <strong id="global-player-title">Selecciona una canción</strong>
+        <span id="global-player-artist"><%= siteSettings.siteName %></span>
+      </div>
+      <div class="global-player-controls">
+        <button type="button" class="primary-btn small-btn" id="global-player-toggle">▶</button>
+      </div>
+      <div class="global-player-progress-wrap">
+        <div class="global-player-time-row">
+          <span id="global-player-current">0:00</span>
+          <span id="global-player-total">0:00</span>
+        </div>
+        <div class="global-player-progress" id="global-player-progress" aria-label="Barra de progreso de reproducción">
+          <span id="global-player-progress-bar"></span>
+        </div>
+      </div>
+      <audio id="global-audio" preload="metadata"></audio>
+    </div>

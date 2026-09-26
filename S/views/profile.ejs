@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= profile.username %> | <%= siteSettings.siteName %></title>
+    <link rel="stylesheet" href="<%= googleFontHref %>" />
+    <link rel="stylesheet" href="/public/css/style.css?v=20260946" />
+    <style><%- siteCss %></style>
+    <%- include('partials/pwa-head') %>
+  </head>
+  <body class="theme-dark profile-page visual-<%= siteSettings.visualStyle || 'aurora' %>">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand"><%- include('partials/welcome-user') %><a href="/" class="brand-text"><%= siteSettings.siteName %></a></div>
+        <nav class="nav-links">
+          <a class="nav-library" href="/library">Biblioteca</a>
+          <a class="nav-videos" href="/videos">Vídeos</a>
+          <% if (user) { %><a class="nav-playlists" href="/playlists">Mis playlists</a><a class="nav-upload" href="/songs/upload">Subir</a><% } else { %><a href="/auth/login">Iniciar sesión</a><% } %>
+          <%- include('partials/nav-account-actions') %>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <% if (flash) { %><div class="toast toast-<%= flash.type %>"><%= flash.message %></div><% } %>
+      <section class="panel card-soft profile-header">
+        <div class="profile-avatar-wrap">
+          <% if (profile.avatarPath) { %><img class="profile-avatar" src="<%= profile.avatarPath %>" alt="Avatar de <%= profile.username %>" /><% } else { %><div class="profile-avatar profile-avatar-fallback" aria-hidden="true"><%= siteSettings.siteEmoji || '🎵' %></div><% } %>
+        </div>
+        <div class="profile-info">
+          <h1><%= profile.username %></h1>
+          <p class="profile-bio <%= profile.bio ? '' : 'muted' %>"><%= profile.bio || 'Este perfil todavía no tiene biografía.' %></p>
+          <h2 class="profile-stats-heading"><%= siteSettings.profileStatsTitle || 'Mi actividad' %></h2>
+          <div class="stats-bar"><div class="stat-card"><strong><%= stats.songCount %></strong><small>Canciones</small></div><div class="stat-card"><strong><%= stats.playlistCount %></strong><small>Playlists</small></div></div>
+        </div>
+      </section>
+
+      <% if (isOwner) { %>
+        <section class="panel card-soft profile-edit-section">
+          <h2>Editar perfil</h2>
+          <form action="/profile/update" method="POST" enctype="multipart/form-data" class="profile-edit-grid">
+            <label class="profile-file-label"><span>Imagen de perfil</span><input type="file" name="avatar" accept="image/jpeg,image/png,image/webp,image/gif" /><small>JPG, PNG, WEBP o GIF · máximo 5 MB</small></label>
+            <label class="profile-bio-form"><span>Biografía</span><textarea name="bio" rows="5" maxlength="500" placeholder="Cuéntale algo a la comunidad..."><%= profile.bio || '' %></textarea><small>Máximo 500 caracteres</small><button class="primary-btn" type="submit" aria-label="Guardar cambios" title="Guardar cambios">💾</button></label>
+          </form>
+        </section>
+      <% } %>
+
+      <section>
+        <div class="section-header"><h2>Canciones de <%= profile.username %></h2></div>
+        <% if (!songs.length) { %><div class="empty-state">Todavía no hay canciones publicadas.</div><% } else { %>
+          <div class="song-grid"><% songs.forEach((song) => { %><article class="song-card"><h3><%= song.title %></h3><p class="muted"><%= song.artist %></p><% if (song.mediaType === 'video') { %><video controls preload="metadata" playsinline src="<%= song.filepath %>"></video><% } else { %><audio controls preload="none" src="<%= song.filepath %>"></audio><% } %></article><% }) %></div>
+        <% } %>
+      </section>
+    </main>
+    <%- include('partials/copyright-notice') %>
+    <%- include('partials/global-player') %>
+    <%- include('partials/floating-home') %>
+  </body>
+</html>

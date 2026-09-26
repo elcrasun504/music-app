@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel de administrador | <%= siteSettings.siteName %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="<%= googleFontHref %>" />
+    <link rel="stylesheet" href="/public/css/style.css" />
+    <style><%- siteCss %></style>
+  </head>
+  <body
+    class="theme-dark <%= siteSettings.seasonTheme ? 'season-mode' : '' %>"
+    style="--bg: <%= siteSettings.backgroundColor %>; --panel: <%= siteSettings.cardColor %>; --primary: <%= siteSettings.accentColor %>; --font-body: '<%= siteSettings.bodyFont %>', 'Inter', 'Segoe UI', sans-serif; --font-heading: '<%= siteSettings.headingFont %>', 'Sora', 'Segoe UI', sans-serif; --font-scale: <%= { small: 0.92, medium: 1, large: 1.08, xlarge: 1.2 }[siteSettings.fontScale || 'medium'] %>;"
+  >
+    <% if (siteSettings.seasonTheme) { %>
+      <div class="season-overlay" aria-hidden="true">
+        <span class="snowflake">❄</span><span class="snowflake">❄</span><span class="snowflake">❄</span>
+      </div>
+    <% } %>
+
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <% if (siteSettings.logoPath) { %>
+            <a href="/" aria-label="Volver a la portada" class="brand-logo-link">
+              <img src="<%= siteSettings.logoPath %>" alt="<%= siteSettings.siteName %>" class="brand-logo" />
+            </a>
+          <% } else { %>
+            <a href="/" class="brand-text"><span class="brand-emoji"><%= siteSettings.headerEmoji || '🎧' %></span> <%= siteSettings.siteName %></a>
+          <% } %>
+        </div>
+
+        <nav class="nav-links">
+          <a href="/">Biblioteca</a>
+          <% if (user && user.role === 'admin') { %>
+            <a href="/admin">Panel de administrador</a>
+          <% } %>
+          <form action="/auth/logout" method="POST">
+            <button type="submit">Cerrar sesión</button>
+          </form>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <% if (flash) { %>
+        <div class="toast toast-<%= flash.type %>"><%= flash.message %></div>
+      <% } %>
+
+      <section class="section-header">
+        <h1>Panel de administrador</h1>
+        <a class="secondary-btn" href="/">Volver a la biblioteca</a>
+      </section>
+
+      <div class="admin-dashboard">
+        <section class="panel admin-card">
+          <div class="section-header admin-section-header">
+            <h2>Usuarios</h2>
+          </div>
+
+          <div class="admin-table">
+            <div class="admin-row admin-row-head">
+              <span>Usuario</span>
+              <span>Email</span>
+              <span>Rol</span>
+              <span>Acciones</span>
+            </div>
+
+            <% users.forEach((entry) => { %>
+              <div class="admin-row">
+                <span><strong><%= entry.username %></strong></span>
+                <span><%= entry.email %></span>
+                <form action="/admin/users/<%= entry.id %>/role" method="POST" class="admin-inline-form">
+                  <select name="role" aria-label="Cambiar rol de <%= entry.username %>">
+                    <option value="user" <%= entry.role === 'user' ? 'selected' : '' %>>user</option>
+                    <option value="admin" <%= entry.role === 'admin' ? 'selected' : '' %>>admin</option>
+                  </select>
+                  <button type="submit" class="secondary-btn small-btn">Guardar</button>
+                </form>
+                <div class="admin-actions">
+                  <% if (user && user.id !== entry.id) { %>
+                    <button
+                      type="button"
+                      class="danger-btn small-btn confirm-trigger"
+                      data-confirm-form="delete-user-form-<%= entry.id %>"
+                      data-confirm-title="¿Eliminar la cuenta de <%= entry.username %>?"
+                      data-confirm-message="Se eliminarán también sus canciones y playlists asociadas."
+                    >
+                      Eliminar
+                    </button>
+                    <form id="delete-user-form-<%= entry.id %>" action="/admin/users/<%= entry.id %>/delete" method="POST" class="hidden"></form>
+                  <% } %>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        </section>
+
+        <section class="panel admin-card">
+          <div class="section-header admin-section-header">
+            <h2>Canciones</h2>
+          </div>
+
+          <div class="admin-table">
+            <div class="admin-row admin-row-head">
+              <span>Título</span>
+              <span>Usuario</span>
+              <span>Acciones</span>
+            </div>
+
+            <% songs.forEach((song) => { %>
+              <div class="admin-row">
+                <span class="admin-title-cell"><strong><%= song.title %></strong> · <%= song.artist %></span>
+                <span><%= song.uploader_username %></span>
+                <div class="admin-actions">
+                  <button
+                    type="button"
+                    class="danger-btn small-btn confirm-trigger"
+                    data-confirm-form="delete-song-form-<%= song.id %>"
+                    data-confirm-title="¿Eliminar '<%= song.title %>'?"
+                    data-confirm-message="Se borrará el archivo y la entrada en la librería."
+                  >
+                    Eliminar
+                  </button>
+                  <form id="delete-song-form-<%= song.id %>" action="/admin/songs/<%= song.id %>/delete" method="POST" class="hidden"></form>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        </section>
+
+        <section class="panel admin-card">
+          <div class="section-header admin-section-header">
+            <h2>Playlists</h2>
+          </div>
+
+          <div class="admin-table">
+            <div class="admin-row admin-row-head">
+              <span>Nombre</span>
+              <span>Propietario</span>
+              <span>Acciones</span>
+            </div>
+
+            <% playlists.forEach((playlist) => { %>
+              <div class="admin-row">
+                <span class="admin-title-cell"><strong><%= playlist.name %></strong></span>
+                <span><%= playlist.owner.username %></span>
+                <div class="admin-actions">
+                  <button
+                    type="button"
+                    class="danger-btn small-btn confirm-trigger"
+                    data-confirm-form="delete-playlist-form-<%= playlist.id %>"
+                    data-confirm-title="¿Eliminar la playlist '<%= playlist.name %>'?"
+                    data-confirm-message="Esta acción eliminará la playlist para todos los usuarios."
+                  >
+                    Eliminar
+                  </button>
+                  <form id="delete-playlist-form-<%= playlist.id %>" action="/admin/playlists/<%= playlist.id %>/delete" method="POST" class="hidden"></form>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        </section>
+
+        <section class="panel admin-card appearance-panel">
+          <div class="section-header admin-section-header">
+            <h2>Apariencia</h2>
+          </div>
+
+          <form action="/admin/settings" method="POST" enctype="multipart/form-data" class="appearance-form" id="appearance-form">
+            <div class="appearance-tabs" role="tablist" aria-label="Secciones de apariencia">
+              <button type="button" class="tab-button active" data-tab="colors">Colores</button>
+              <button type="button" class="tab-button" data-tab="typography">Tipografía</button>
+              <button type="button" class="tab-button" data-tab="texts">Textos</button>
+              <button type="button" class="tab-button" data-tab="icons">Logo/Íconos</button>
+              <button type="button" class="tab-button" data-tab="layout">Layout</button>
+            </div>
+
+            <div class="appearance-layout">
+              <div class="appearance-form-grid">
+                <div class="tab-panel active" data-panel="colors">
+                  <label>
+                    Color principal
+                    <input type="color" name="accentColor" value="<%= siteSettings.accentColor %>" />
+                  </label>
+                  <label>
+                    Fondo general
+                    <input type="color" name="backgroundColor" value="<%= siteSettings.backgroundColor %>" />
+                  </label>
+                  <label>
+                    Color de tarjetas
+                    <input type="color" name="cardColor" value="<%= siteSettings.cardColor %>" />
+                  </label>
+                  <div id="contrast-warning" class="contrast-warning hidden">⚠️ El contraste es bajo: el texto claro sobre fondo muy claro puede resultar difícil de leer.</div>
+                </div>
+
+                <div class="tab-panel" data-panel="typography">
+                  <label>
+                    Fuente para títulos
+                    <input list="font-options" name="headingFont" value="<%= siteSettings.headingFont || 'Sora' %>" placeholder="Buscar fuente..." />
+                  </label>
+                  <label>
+                    Fuente para cuerpo
+                    <input list="font-options" name="bodyFont" value="<%= siteSettings.bodyFont || 'Inter' %>" placeholder="Buscar fuente..." />
+                  </label>
+                  <label>
+                    Escala global
+                    <select name="fontScale">
+                      <option value="small" <%= siteSettings.fontScale === 'small' ? 'selected' : '' %>>Pequeño</option>
+                      <option value="medium" <%= !siteSettings.fontScale || siteSettings.fontScale === 'medium' ? 'selected' : '' %>>Medio</option>
+                      <option value="large" <%= siteSettings.fontScale === 'large' ? 'selected' : '' %>>Grande</option>
+                      <option value="xlarge" <%= siteSettings.fontScale === 'xlarge' ? 'selected' : '' %>>Extra grande</option>
+                    </select>
+                  </label>
+                  <div class="font-preview-box">
+                    <span>Ejemplo de tipografía</span>
+                    <strong id="font-preview-sample">La música siempre tiene un color.</strong>
+                  </div>
+                </div>
+
+                <div class="tab-panel" data-panel="texts">
+                  <label>
+                    Nombre del sitio
+                    <input type="text" name="siteName" value="<%= siteSettings.siteName %>" maxlength="60" required />
+                  </label>
+                  <label>
+                    Texto del hero
+                    <input type="text" name="heroText" value="<%= siteSettings.heroText %>" maxlength="120" required />
+                  </label>
+                  <label>
+                    Mensaje de bienvenida
+                    <textarea name="welcomeText" rows="3" maxlength="250"><%= siteSettings.welcomeText %></textarea>
+                  </label>
+                  <label>
+                    Título de la biblioteca
+                    <input type="text" name="libraryTitle" value="<%= siteSettings.libraryTitle %>" maxlength="60" />
+                  </label>
+                  <label>
+                    Título de playlists
+                    <input type="text" name="playlistsTitle" value="<%= siteSettings.playlistsTitle %>" maxlength="60" />
+                  </label>
+                  <label>
+                    Texto vacío
+                    <input type="text" name="emptyStateText" value="<%= siteSettings.emptyStateText %>" maxlength="120" />
+                  </label>
+                  <label>
+                    Texto del footer
+                    <input type="text" name="footerText" value="<%= siteSettings.footerText %>" maxlength="120" />
+                  </label>
+                </div>
+
+                <div class="tab-panel" data-panel="icons">
+                  <label>
+                    Emoji general del sitio
+                    <input type="text" name="siteEmoji" value="<%= siteSettings.siteEmoji || '🎵' %>" maxlength="4" />
+                  </label>
+                  <label>
+                    Emoji del header
+                    <input type="text" name="headerEmoji" value="<%= siteSettings.headerEmoji || '🎧' %>" maxlength="4" />
+                  </label>
+                  <label>
+                    Emoji del hero
+                    <input type="text" name="heroEmoji" value="<%= siteSettings.heroEmoji || '✨' %>" maxlength="4" />
+                  </label>
+                  <label>
+                    Texto del botón principal
+                    <input type="text" name="primaryButtonText" value="<%= siteSettings.primaryButtonText %>" maxlength="40" />
+                  </label>
+                  <label>
+                    Texto del botón secundario
+                    <input type="text" name="secondaryButtonText" value="<%= siteSettings.secondaryButtonText %>" maxlength="60" />
+                  </label>
+                  <label>
+                    Logo del sitio
+                    <input type="file" name="logo" accept="image/*" />
+                  </label>
+                  <div class="emoji-picker-wrap">
+                    <button type="button" class="secondary-btn small-btn" id="emoji-picker-trigger">Elegir emoji</button>
+                    <div id="emoji-picker-container" class="emoji-picker hidden"></div>
+                  </div>
+                </div>
+
+                <div class="tab-panel" data-panel="layout">
+                  <label>
+                    Tema estacional
+                    <input type="checkbox" name="seasonTheme" <%= siteSettings.seasonTheme ? 'checked' : '' %> />
+                  </label>
+                  <label>
+                    Barra superior sticky
+                    <input type="checkbox" checked disabled />
+                  </label>
+                  <label>
+                    Modo de preview
+                    <select name="previewMode">
+                      <option value="default">Predeterminado</option>
+                      <option value="compact">Compacto</option>
+                      <option value="wide">Amplio</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+
+              <div class="admin-live-preview">
+                <div class="preview-shell" id="preview-shell">
+                  <div class="preview-toolbar">
+                    <% if (siteSettings.logoPath) { %>
+                      <img src="<%= siteSettings.logoPath %>" alt="Logo" class="preview-logo" />
+                    <% } else { %>
+                      <span class="preview-title"><%= siteSettings.siteName %></span>
+                    <% } %>
+                    <span class="preview-emoji"><%= siteSettings.headerEmoji || '🎧' %></span>
+                  </div>
+
+                  <div class="preview-hero-block">
+                    <div class="preview-hero-emoji"><%= siteSettings.heroEmoji || '✨' %></div>
+                    <h3 id="preview-hero-text"><%= siteSettings.heroText %></h3>
+                  </div>
+
+                  <div class="preview-card-row">
+                    <span class="preview-pill"><%= siteSettings.siteEmoji || '🎵' %> <%= siteSettings.libraryTitle || 'Biblioteca' %></span>
+                    <button type="button" class="preview-btn"><%= siteSettings.primaryButtonText || 'Añadir canción' %></button>
+                  </div>
+
+                  <div class="preview-palette">
+                    <span class="swatch accent"></span>
+                    <span class="swatch bg"></span>
+                    <span class="swatch card"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="primary-btn" type="submit">Guardar cambios</button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </main>
+
+    <datalist id="font-options">
+      <option value="Inter" />
+      <option value="Sora" />
+      <option value="Space Grotesk" />
+      <option value="Poppins" />
+      <option value="Roboto" />
+      <option value="Montserrat" />
+      <option value="Lora" />
+      <option value="Merriweather" />
+      <option value="Nunito" />
+      <option value="Raleway" />
+      <option value="Playfair Display" />
+      <option value="Ubuntu" />
+      <option value="Oswald" />
+      <option value="Pacifico" />
+      <option value="Lobster" />
+      <option value="Bungee" />
+      <option value="Orbitron" />
+      <option value="Quicksand" />
+    </datalist>
+
+    <div class="modal-backdrop" id="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+      <div class="modal-card">
+        <h3 id="confirm-modal-title">Confirmación</h3>
+        <p id="confirm-modal-message">¿Estás seguro?</p>
+        <div class="modal-actions">
+          <button type="button" class="secondary-btn small-btn" id="confirm-modal-cancel">Cancelar</button>
+          <button type="button" class="danger-btn small-btn" id="confirm-modal-confirm">Confirmar</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="/public/js/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Acceso rápido de administrador</title>
+    <link rel="stylesheet" href="/public/css/style.css" />
+  </head>
+  <body
+    class="theme-dark"
+    style="--bg: <%= siteSettings.backgroundColor %>; --panel: <%= siteSettings.cardColor %>; --primary: <%= siteSettings.accentColor %>; --font-body: '<%= siteSettings.typography %>', 'Inter', 'Segoe UI', sans-serif;"
+  >
+    <main class="container">
+      <section class="form-box">
+        <h1>Acceso rápido de administrador</h1>
+
+        <% if (flash) { %>
+          <div class="toast toast-<%= flash.type %>"><%= flash.message %></div>
+        <% } %>
+
+        <% if (error) { %>
+          <div class="notice error"><%= error %></div>
+        <% } %>
+
+        <form action="/admin-access" method="POST">
+          <label>
+            PIN de administrador
+            <input type="password" name="pin" autocomplete="one-time-code" placeholder="Introduce el PIN" required />
+          </label>
+
+          <div class="form-actions">
+            <button class="primary-btn" type="submit">Entrar</button>
+            <a class="secondary-btn" href="/auth/login">Volver al login</a>
+          </div>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

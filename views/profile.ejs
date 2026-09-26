@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= profileUser.username %> | <%= siteSettings.siteName %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="<%= googleFontHref %>" />
+    <link rel="stylesheet" href="/public/css/style.css" />
+    <style><%- siteCss %></style>
+  </head>
+  <body
+    class="theme-dark"
+    style="--bg: <%= siteSettings.backgroundColor %>; --panel: <%= siteSettings.cardColor %>; --primary: <%= siteSettings.accentColor %>;"
+  >
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <% if (siteSettings.logoPath) { %>
+            <a href="/" aria-label="Volver a la portada">
+              <img src="<%= siteSettings.logoPath %>" alt="<%= siteSettings.siteName %>" class="brand-logo" />
+            </a>
+          <% } else { %>
+            <a href="/" class="brand-text"><%= siteSettings.siteName %></a>
+          <% } %>
+        </div>
+        <nav class="nav-links">
+          <a href="/">Biblioteca</a>
+          <% if (user) { %>
+            <a href="/playlists">Mis playlists</a>
+            <a href="/profile" class="user-pill">Hola, <%= user.username %></a>
+            <% if (user.role === 'admin') { %>
+              <a href="/admin">Panel de administrador</a>
+            <% } %>
+            <form action="/auth/logout" method="POST">
+              <button type="submit">Cerrar sesión</button>
+            </form>
+          <% } else { %>
+            <a href="/auth/login">Iniciar sesión</a>
+            <a href="/auth/register">Registrarse</a>
+          <% } %>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <% if (flash) { %>
+        <div class="toast toast-<%= flash.type %>"><%= flash.message %></div>
+      <% } %>
+
+      <section class="panel profile-header">
+        <div class="profile-avatar-wrap">
+          <img
+            src="<%= profileUser.avatarPath || '/public/images/placeholder-avatar.svg' %>"
+            alt="Foto de perfil de <%= profileUser.username %>"
+            class="profile-avatar"
+            onerror="this.onerror=null;this.src='/public/images/placeholder-avatar.svg';"
+          />
+        </div>
+
+        <div class="profile-info">
+          <h1><%= profileUser.username %><% if (profileUser.role === 'admin') { %> <span class="pill">Admin</span><% } %></h1>
+          <% if (profileUser.bio) { %>
+            <p class="profile-bio"><%= profileUser.bio %></p>
+          <% } else if (isOwner) { %>
+            <p class="profile-bio muted">Aún no has escrito una bio.</p>
+          <% } %>
+
+          <div class="stats-bar">
+            <div class="stat-card">
+              <span class="stat-icon">🎵</span>
+              <div>
+                <strong><%= stats.songCount %></strong>
+                <small>Canciones</small>
+              </div>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon">📚</span>
+              <div>
+                <strong><%= stats.playlistCount %></strong>
+                <small>Playlists</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <% if (isOwner) { %>
+        <section class="panel profile-edit-section">
+          <h2>Editar perfil</h2>
+
+          <div class="profile-edit-grid">
+            <form action="/profile/avatar" method="POST" enctype="multipart/form-data" class="profile-avatar-form">
+              <label class="profile-file-label">
+                Foto de perfil
+                <input type="file" name="avatar" accept="image/png,image/jpeg,image/webp,image/gif" required />
+              </label>
+              <div class="form-actions">
+                <button class="primary-btn small-btn" type="submit">Subir foto</button>
+                <% if (profileUser.avatarPath) { %>
+                  <button
+                    class="danger-btn small-btn confirm-trigger"
+                    type="button"
+                    data-confirm-form="delete-avatar-form"
+                    data-confirm-title="¿Eliminar tu foto de perfil?"
+                    data-confirm-message="Volverás a usar la imagen por defecto."
+                  >
+                    Quitar foto
+                  </button>
+                <% } %>
+              </div>
+            </form>
+            <form id="delete-avatar-form" action="/profile/avatar/delete" method="POST" class="hidden"></form>
+
+            <form action="/profile/bio" method="POST" class="profile-bio-form">
+              <label>
+                Bio
+                <textarea name="bio" maxlength="280" rows="3" placeholder="Cuéntanos sobre ti (máx. 280 caracteres)"><%= profileUser.bio %></textarea>
+              </label>
+              <div class="form-actions">
+                <button class="primary-btn small-btn" type="submit">Guardar bio</button>
+              </div>
+            </form>
+          </div>
+        </section>
+      <% } %>
+
+      <section class="panel">
+        <div class="library-header">
+          <h2><%= isOwner ? 'Mis canciones' : profileUser.username + ' subió' %></h2>
+        </div>
+
+        <% if (songs.length === 0) { %>
+          <div class="empty-state">
+            <%= isOwner ? 'Aún no has subido canciones.' : 'Este usuario todavía no ha subido canciones.' %>
+          </div>
+        <% } else { %>
+          <div class="song-grid">
+            <% songs.forEach((song) => { %>
+              <article class="song-card" data-song-id="<%= song.id %>" data-song-title="<%= song.title %>" data-song-artist="<%= song.artist %>" data-song-cover="<%= song.coverPath || '/public/images/placeholder-cover.svg' %>" data-song-src="<%= song.filepath %>" data-song-duration="<%= song.duration || 0 %>">
+                <div class="song-cover-wrap">
+                  <img
+                    src="<%= song.coverPath || '/public/images/placeholder-cover.svg' %>"
+                    alt="Carátula de <%= song.title %>"
+                    class="song-cover"
+                    onerror="this.onerror=null;this.src='/public/images/placeholder-cover.svg';"
+                  />
+                </div>
+                <div class="song-meta">
+                  <span class="pill"><%= song.artist %></span>
+                </div>
+                <h3 class="song-title"><%= song.title %></h3>
+                <div class="player-mini-row">
+                  <button type="button" class="icon-btn" data-play-song="<%= song.id %>" aria-label="Reproducir <%= song.title %>">▶</button>
+                  <span class="song-duration"><%= song.duration ? Math.floor(song.duration / 60) + ':' + String(song.duration % 60).padStart(2, '0') : '0:00' %></span>
+                </div>
+              </article>
+            <% }); %>
+          </div>
+        <% } %>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p><%= siteSettings.footerText || 'Hecho con ❤️ para la comunidad.' %></p>
+    </footer>
+
+    <%- include('partials/global-player') %>
+
+    <div class="modal-backdrop" id="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+      <div class="modal-card">
+        <h3 id="confirm-modal-title">Confirmación</h3>
+        <p id="confirm-modal-message">¿Estás seguro?</p>
+        <div class="modal-actions">
+          <button type="button" class="secondary-btn small-btn" id="confirm-modal-cancel">Cancelar</button>
+          <button type="button" class="danger-btn small-btn" id="confirm-modal-confirm">Confirmar</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="/public/js/main.js"></script>
+  </body>
+</html>
